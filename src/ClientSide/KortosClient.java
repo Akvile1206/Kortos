@@ -8,6 +8,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.Socket;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,6 +19,34 @@ public class KortosClient {
 
     static ArrayList<String> cards = null;
     static ArrayList<String> table = null;
+    static CardDisplay cd = new CardDisplay();
+
+    private static void printCards(ArrayList<String> cards) {
+        for(int i=0; i<6; i++) {
+            for(String c:cards) {
+                System.out.print(cd.CardASCII.get(c)[i] + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+        int i=0;
+        for(String c:cards) {
+            StringBuilder sb = new StringBuilder();
+            if(i<=9) {
+                sb.append("("+i+") ");
+            } else {
+                sb.append("("+i+")");
+            }
+            if(c.length()==2) {
+                sb.append(c+" ");
+            } else {
+                sb.append(c);
+            }
+            System.out.print(sb.toString() + " ");
+            i++;
+        }
+        System.out.println();
+    }
 
     private static void getMessage(ObjectInputStream ois) {
         try {
@@ -29,11 +59,7 @@ public class KortosClient {
             } else if (received instanceof CardsMessage) {
                 CardsMessage cm = (CardsMessage) received;
                 System.out.println(cm.header);
-                int i = 0;
-                for(String c : cm.cards) {
-                    System.out.print("("+i+")"+c+" ");
-                    i++;
-                }
+                printCards(cm.cards);
                 System.out.println();
                 if(cm.header.equalsIgnoreCase("Your Cards:")) {
                     cards = cm.cards;
@@ -92,6 +118,7 @@ public class KortosClient {
                 System.out.println();
 
             } else if(out.startsWith("\\take")) {
+                table = null;
                 oos.writeObject(new TakeCardsMessage());
             } else if (out.startsWith("\\checkTaken")) {
                 oos.writeObject(new CheckCardsMessage());
@@ -115,9 +142,9 @@ public class KortosClient {
         return sdf.format(now);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnsupportedEncodingException {
 
-        String server = "localhost";//"131.111.8.60";
+        String server = "131.111.8.60";
         int port = 8000;
 
         final Socket s; // connect to "server" on "port".
