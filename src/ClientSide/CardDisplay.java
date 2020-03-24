@@ -1,26 +1,25 @@
 package ClientSide;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
-public class CardDisplay {
+class CardDisplay {
 
-    public static HashMap<String, String[]> CardASCII = new HashMap<>();
+    static HashMap<String, String[]> CardASCII = new HashMap<>();
     static {
         CardASCII.put("9S", new String[]{
                 " _____ ",
                 "|9    |",
-                "|^ ^ ^|",
-                "|^ ^ ^|",
-                "|^ ^ ^|",
+                "|♠ ♠ ♠|",
+                "|♠ ♠ ♠|",
+                "|♠ ♠ ♠|",
                 "|____9|"
         });
         CardASCII.put("10S", new String[]{
                 " _____ ",
-                "|10 ^ |",
-                "|^ ^ ^|",
-                "|^ ^ ^|",
-                "|^ ^ ^|",
+                "|10 ♠ |",
+                "|♠ ♠ ♠|",
+                "|♠ ♠ ♠|",
+                "|♠ ♠ ♠|",
                 "|___10|"
         });
         CardASCII.put("JS", new String[]{
@@ -58,17 +57,17 @@ public class CardDisplay {
         CardASCII.put("9C", new String[]{
                 " _____ ",
                 "|9    |",
-                "|& & &|",
-                "|& & &|",
-                "|& & &|",
+                "|♣ ♣ ♣|",
+                "|♣ ♣ ♣|",
+                "|♣ ♣ ♣|",
                 "|____9|"
         });
         CardASCII.put("10C", new String[]{
                 " _____ ",
-                "|10 & |",
-                "|& & &|",
-                "|& & &|",
-                "|& & &|",
+                "|10 ♣ |",
+                "|♣ ♣ ♣|",
+                "|♣ ♣ ♣|",
+                "|♣ ♣ ♣|",
                 "|___10|"
         });
         CardASCII.put("JC", new String[]{
@@ -106,17 +105,17 @@ public class CardDisplay {
         CardASCII.put("9H", new String[]{
                 " _____ ",
                 "|9    |",
-                "|v v v|",
-                "|v v v|",
-                "|v v v|",
+                "|♥ ♥ ♥|",
+                "|♥ ♥ ♥|",
+                "|♥ ♥ ♥|",
                 "|____9|"
         });
         CardASCII.put("10H", new String[]{
                 " _____ ",
-                "|10 v |",
-                "|v v v|",
-                "|v v v|",
-                "|v v v|",
+                "|10 ♥ |",
+                "|♥ ♥ ♥|",
+                "|♥ ♥ ♥|",
+                "|♥ ♥ ♥|",
                 "|___10|"
         });
         CardASCII.put("JH", new String[]{
@@ -154,17 +153,17 @@ public class CardDisplay {
         CardASCII.put("9D", new String[]{
                 " _____ ",
                 "|9    |",
-                "|0 0 0|",
-                "|0 0 0|",
-                "|0 0 0|",
+                "|♦ ♦ ♦|",
+                "|♦ ♦ ♦|",
+                "|♦ ♦ ♦|",
                 "|____9|"
         });
         CardASCII.put("10D", new String[]{
                 " _____ ",
-                "|10 0 |",
-                "|0 0 0|",
-                "|0 0 0|",
-                "|0 0 0|",
+                "|10 ♦ |",
+                "|♦ ♦ ♦|",
+                "|♦ ♦ ♦|",
+                "|♦ ♦ ♦|",
                 "|___10|"
         });
         CardASCII.put("JD", new String[]{

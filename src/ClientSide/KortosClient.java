@@ -1,66 +1,139 @@
 package ClientSide;
 
 import Messages.*;
+import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.event.Event;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.net.Socket;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
+import java.util.ResourceBundle;
 
-public class KortosClient {
+public class KortosClient implements Initializable {
 
-    static ArrayList<String> cards = null;
-    static ArrayList<String> table = null;
-    static CardDisplay cd = new CardDisplay();
+    private String server = "127.0.0.1";
+    private int port = 8000;
+    private final double epsilon = 0.00001;
 
-    private static void printCards(ArrayList<String> cards) {
+    private ArrayList<String> cards = null;
+    private ArrayList<String> table = null;
+    private final Socket s = createConnection(server, port);
+    private ObjectOutputStream oos;
+    private Thread outputThread = null;
+    private long vvalLastChange = 0;
+    private double vvalBeforeChange = 1.0;
+
+    @FXML private ScrollPane root;
+    @FXML private Text consoleText;
+    @FXML private Text consoleTextBound;
+    @FXML private TextField inputText;
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        root.addEventHandler(KeyEvent.KEY_PRESSED, ev -> {
+            if (ev.getCode() == KeyCode.ENTER) {
+                KortosClient.this.readUserInput();
+                ev.consume();
+            }
+        });
+        root.addEventHandler(MouseEvent.MOUSE_PRESSED, Event::consume);
+        root.setVvalue(1.0);
+
+        consoleText.setFont(Font.font ("Consolas"));
+        consoleTextBound.setFont(Font.font ("Consolas"));
+        consoleTextBound.textProperty().bind(Bindings.concat("> ").concat(inputText.textProperty()));
+        inputText.requestFocus();
+        root.vvalueProperty().addListener((observableValue, oldVal, newVal) -> {
+            vvalLastChange = System.currentTimeMillis();
+            vvalBeforeChange = oldVal.doubleValue();
+        });
+        ((VBox) root.getContent()).heightProperty().addListener((observableValue, oldVal, newVal) -> {
+            if ((System.currentTimeMillis() - vvalLastChange < 5) && (vvalBeforeChange + epsilon > 1.0)) {
+                root.setVvalue(1.0);
+            }
+        });
+
+        if (outputThread == null) {
+            outputThread = initialiseOutputThread();
+            outputThread.start();
+        }
+
+        try {
+            assert s != null;
+            OutputStream outputStream = s.getOutputStream();
+            oos = new ObjectOutputStream(outputStream);
+        }
+        catch (IOException exc) {
+            exc.printStackTrace();
+        }
+    }
+
+    private void printCards(ArrayList<String> cards) {
         for(int i=0; i<6; i++) {
             for(String c:cards) {
-                System.out.print(cd.CardASCII.get(c)[i] + " ");
+                displayText(CardDisplay.CardASCII.get(c)[i] + " ");
             }
-            System.out.println();
+            displayLine();
         }
-        System.out.println();
+        displayLine();
         int i=0;
         for(String c:cards) {
             StringBuilder sb = new StringBuilder();
             if(i<=9) {
-                sb.append("("+i+") ");
+                sb.append("(").append(i).append(") ");
             } else {
-                sb.append("("+i+")");
+                sb.append("(").append(i).append(")");
             }
             if(c.length()==2) {
-                sb.append(c+" ");
+                sb.append(c).append(" ");
             } else {
                 sb.append(c);
             }
-            System.out.print(sb.toString() + " ");
+            displayText(sb.toString() + " ");
             i++;
         }
-        System.out.println();
+        displayLine();
     }
 
-    private static void getMessage(ObjectInputStream ois) {
+    private void displayLine() {
+        Platform.runLater(() -> consoleText.setText(consoleText.getText() + "\n"));
+    }
+
+    private void displayLine(String line) {
+        Platform.runLater(() -> consoleText.setText(consoleText.getText() + line + "\n"));
+    }
+
+    private void displayText(String line) {
+        Platform.runLater(() -> consoleText.setText(consoleText.getText() + line));
+    }
+
+    private void getMessage(ObjectInputStream ois) {
         try {
             Object received = ois.readObject();
             if (received instanceof RelayMessage) {
                 RelayMessage relay = (RelayMessage) received;
-                System.out.println(getFormattedTime() + " [" + relay.getFrom() + "] " + relay.getMessage());
+                displayLine(getFormattedTime() + " [" + relay.getFrom() + "] " + relay.getMessage());
             } else if (received instanceof StatusMessage) {
-                System.out.println(getFormattedTime() + " [Server] " + ((StatusMessage) received).getMessage());
+                displayLine(getFormattedTime() + " [Server] " + ((StatusMessage) received).getMessage());
             } else if (received instanceof CardsMessage) {
                 CardsMessage cm = (CardsMessage) received;
-                System.out.println(cm.header);
+                displayLine(cm.header);
                 printCards(cm.cards);
-                System.out.println();
+                displayLine();
                 if(cm.header.equalsIgnoreCase("Your Cards:")) {
                     cards = cm.cards;
                 } else if (cm.header.equalsIgnoreCase("Cards on the table:")) {
@@ -72,61 +145,74 @@ public class KortosClient {
         }
     }
 
-    private static void sendMessage(String out, ObjectOutputStream oos) {
+    private void sendMessage(String out, ObjectOutputStream oos) {
         try {
-            if (out.startsWith("\\nick")) {
+            if (out.startsWith("\\")) {
                 String[] split = out.split(" ");
-                ChangeNickMessage cnm = new ChangeNickMessage(split[1]);
-                oos.writeObject(cnm);
-            } else if(out.startsWith("\\shuffle")){
-                ShuffleMessage sm = new ShuffleMessage(9);
-                oos.writeObject(sm);
-            } else if (out.startsWith("\\cards")) {
-                if(cards == null) {
-                    System.out.println("You have no cards yet!");
-                    return;
-                }
-                System.out.println("Your Cards: ");
-                int i = 0;
-                for(String c : cards) {
-                    System.out.print("("+i+")"+c+" ");
-                    i++;
-                }
-                System.out.println();
 
-            } else if (out.startsWith("\\place")) {
-                String[] split = out.split(" ");
-                int index = Integer.parseInt(split[1]);
-                if(index > cards.size()) {
-                    System.out.println("This card index does not exist. Type \\cards to see your cards and their indexes.");
-                    return;
-                }
-                PlaceCardMessage pcm = new PlaceCardMessage(cards.get(index));
-                oos.writeObject(pcm);
-                cards.remove(index);
-            } else if (out.startsWith("\\table")) {
-                if(cards == null) {
-                    System.out.println("There are no cards on the table yet!");
-                    return;
-                }
-                System.out.println("Cards on the table: ");
-                int i = 0;
-                for(String c : table) {
-                    System.out.print("("+i+")"+c+" ");
-                    i++;
-                }
-                System.out.println();
+                switch (split[0]) {
+                    case "\\nick":
+                        ChangeNickMessage cnm = new ChangeNickMessage(split[1]);
+                        oos.writeObject(cnm);
+                        break;
+                    case "\\shuffle":
+                        ShuffleMessage sm = new ShuffleMessage(9);
+                        oos.writeObject(sm);
+                        break;
+                    case "\\cards": {
+                        if (cards == null) {
+                            displayLine("You have no cards yet!");
+                            return;
+                        }
+                        displayLine("Your Cards: ");
+                        int i = 0;
+                        for (String c : cards) {
+                            displayText("(" + i + ")" + c + " ");
+                            i++;
+                        }
+                        displayLine();
 
-            } else if(out.startsWith("\\take")) {
-                table = null;
-                oos.writeObject(new TakeCardsMessage());
-            } else if (out.startsWith("\\checkTaken")) {
-                oos.writeObject(new CheckCardsMessage());
-            } else if (out.startsWith("\\")) {
-                String[] split = out.split(" ");
-                String command = split[0].substring(1);
-                System.out.println(getFormattedTime() + " [Client] Unknown command \"" + command + "\"");
-            } else {
+                        break;
+                    }
+                    case "\\place":
+                        String cardCode = split[1].toUpperCase();
+                        if (!cards.contains(cardCode)) {
+                            displayLine("You don't have this card. Type \\cards to see your cards and their indexes.");
+                            return;
+                        }
+                        PlaceCardMessage pcm = new PlaceCardMessage(cardCode);
+                        oos.writeObject(pcm);
+                        cards.remove(cardCode);
+                        break;
+                    case "\\table": {
+                        if (cards == null) {
+                            displayLine("There are no cards on the table yet!");
+                            return;
+                        }
+                        displayLine("Cards on the table: ");
+                        int i = 0;
+                        for (String c : table) {
+                            displayText("(" + i + ")" + c + " ");
+                            i++;
+                        }
+                        displayLine();
+
+                        break;
+                    }
+                    case "\\take":
+                        table = null;
+                        oos.writeObject(new TakeCardsMessage());
+                        break;
+                    case "\\checkTaken":
+                        oos.writeObject(new CheckCardsMessage());
+                        break;
+                    default:
+                        String command = split[0].substring(1);
+                        displayLine(getFormattedTime() + " [Client] Unknown command \"" + command + "\"");
+                        break;
+                }
+            }
+            else {
                 ChatMessage cm = new ChatMessage(out);
                 oos.writeObject(cm);
             }
@@ -136,30 +222,31 @@ public class KortosClient {
 
     }
 
-    private static String getFormattedTime() {
+    private String getFormattedTime() {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");//dd/MM/yyyy
         Date now = new Date();
         return sdf.format(now);
     }
 
-    public static void main(String[] args) throws UnsupportedEncodingException {
-
-        String server = "131.111.8.60";
-        int port = 8000;
-
-        final Socket s; // connect to "server" on "port".
+    private Socket createConnection(String server, int port) {
+        final Socket s;
         try {
             s = new Socket(server, port);
-            System.out.println(getFormattedTime() + " [Client] Connected to " + server
+            displayLine(getFormattedTime() + " [Client] Connected to " + server
                     + " on port " + port + ".");
         } catch (IOException e) {
             System.err.println("Cannot connect to " + server + " on port " + port);
-            return;
+            return null;
         }
+        return s;
+    }
+
+    private Thread initialiseOutputThread() {
         Thread output =
                 new Thread(() -> {
                     // read bytes from the socket, interpret them as string data and
                     // print the resulting string data to the screen.
+                    assert s != null;
                     try (InputStream inputStream = s.getInputStream()) {
                         ObjectInputStream ois = new ObjectInputStream(inputStream);
                         while (true) {
@@ -170,25 +257,14 @@ public class KortosClient {
                     }
                 });
         output.setDaemon(true); // allows JVM to exit when this thread is running.
-        output.start();
 
-        BufferedReader r = new BufferedReader(new InputStreamReader(System.in));
+        return output;
+    }
 
-        try (OutputStream outputStream = s.getOutputStream()) {
-            ObjectOutputStream oos = new ObjectOutputStream(outputStream);
-            while (true) {
-                // read data from the user, blocking until ready. Convert the
-                // string data from the user into an array of bytes and write
-                // the array of bytes to "socket".
-                try {
-                    String out = r.readLine();
-                    sendMessage(out, oos);
-                } catch (IOException e) {
-                    System.err.println("Cannot get output");
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    @FXML
+    private void readUserInput(){
+        assert s != null;
+        sendMessage(inputText.getText(), oos);
+        inputText.setText("");
     }
 }
