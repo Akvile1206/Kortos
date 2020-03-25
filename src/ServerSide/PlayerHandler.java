@@ -13,6 +13,7 @@ public class PlayerHandler {
     private SafeMessageQueue<Message> clientMessages;
     private CardDeck cards;
     private SafeMessageQueue<String> playerCards;
+    private SafeMessageQueue<String> taken;
 
     public PlayerHandler(Socket s, MultiQueue<Message> q, CardDeck c) {
         socket = s;
@@ -20,8 +21,9 @@ public class PlayerHandler {
         cards = c;
         clientMessages = new SafeMessageQueue<>();
         playerCards = new SafeMessageQueue<>();
+        taken = new SafeMessageQueue<>();
         multiQueue.register(clientMessages);
-        cards.register(playerCards);
+        cards.register(playerCards, taken);
 
         StringBuilder sb = new StringBuilder();
         sb.append("Player");
@@ -90,7 +92,7 @@ public class PlayerHandler {
 
     private void disconnect() {
         multiQueue.deregister(clientMessages);
-        cards.deregister(playerCards);
+        cards.deregister(playerCards, taken);
         multiQueue.put(new StatusMessage(nickname + " has disconnected."));
     }
 
@@ -109,27 +111,65 @@ public class PlayerHandler {
             } else if (received instanceof ChatMessage) {
                 multiQueue.put(new RelayMessage(nickname, (ChatMessage)received));
             } else if (received instanceof ShuffleMessage) {
-                cards.shuffle(((ShuffleMessage) received).from, multiQueue);
+                int b = cards.shuffle((ShuffleMessage) received, multiQueue);
+                multiQueue.put(new StatusMessage(nickname + " has shuffled cards. There are "+b+" cards in the bargain."));
             } else if (received instanceof PlaceCardMessage) {
                 PlaceCardMessage pcm = (PlaceCardMessage) received;
+                playerCards.remove(pcm.card);
                 StringBuilder sb = new StringBuilder();
                 sb.append(nickname);
                 sb.append(" has placed ");
-                sb.append(pcm.card);
-                sb.append(" on the table.");
-                cards.placeCard(pcm.card);
-                playerCards.remove(pcm.card);
-                multiQueue.put(new StatusMessage(sb.toString()));
-                multiQueue.put(new CardsMessage(cards.getTable(), "Cards on the table:"));
+                if(pcm.faceUp) {
+                    sb.append(pcm.card);
+                } else {
+                    sb.append("a card");
+                }
+                if(pcm.deck == 0) {
+                    sb.append(" on the table.");
+                    cards.placeCardOnTheTable(pcm.card, pcm.faceUp);
+                    multiQueue.put(new StatusMessage(sb.toString()));
+                    multiQueue.put(new CardsMessage(cards.getTable(), "Cards on the table:"));
+                } else if (pcm.deck == 1) {
+                    sb.append(" into their taken card deck.");
+                    multiQueue.put(new StatusMessage(sb.toString()));
+                    taken.put(pcm.card);
+                } else if (pcm.deck == 2) {
+                    sb.append(" into the buffer.");
+                    multiQueue.put(new StatusMessage(sb.toString()));
+                    cards.placeCardIntoTheBuffer(pcm.card, pcm.faceUp);
+                }
                 clientMessages.put(new CardsMessage(playerCards.getAll(), "Your Cards:"));
             } else if (received instanceof TakeCardsMessage) {
-                cards.takeTable(nickname);
-                multiQueue.put(new StatusMessage(nickname + " has taken the cards from the table."));
+                TakeCardsMessage tcm = (TakeCardsMessage) received;
+                int n = tcm.number;
+                if(tcm.deck == 0) { //cards from table go into taken and are put face up
+                    multiQueue.put(new StatusMessage(nickname + " has taken " + n + " cards from the table."));
+                    while(n > 0) {
+                        n--;
+                        taken.put(cards.popTable());
+                    }
+                    multiQueue.put(new CardsMessage(cards.getTable(), "Cards on the table:"));
+                } else if (tcm.deck == 1) { //cards from taken go into the hand
+                    multiQueue.put(new StatusMessage(nickname + " has taken " + n + " cards from their taken deck into their hand."));
+                    while(n > 0) {
+                        n--;
+                        playerCards.put(taken.take());
+                    }
+                    clientMessages.put(new CardsMessage(playerCards.getAll(), "Your Cards:"));
+                } else if (tcm.deck == 2) { //cards from the bargain go into the hand and are put face up
+                    multiQueue.put(new StatusMessage(nickname + " has taken " + n + " cards from the bargain into their hand."));
+                    while(n > 0) {
+                        n--;
+                        playerCards.put(cards.popBargain());
+                    }
+                    clientMessages.put(new CardsMessage(playerCards.getAll(), "Your Cards:"));
+                }
             } else if (received instanceof CheckCardsMessage) {
-                multiQueue.put(new StatusMessage(nickname + " has checked all the taken cards."));
-                HashMap<String, ArrayList<String>> taken = cards.getTaken();
-                for(Map.Entry<String, ArrayList<String>> e: taken.entrySet()) {
-                    multiQueue.put(new CardsMessage((ArrayList<String>) e.getValue().clone(), e.getKey()+ " has:"));
+                multiQueue.put(new StatusMessage(nickname + " has checked their taken cards."));
+                if (((CheckCardsMessage) received).isPublic) {
+                    multiQueue.put(new CardsMessage(taken.getAll(), nickname + " has:"));
+                } else {
+                    clientMessages.put(new CardsMessage(taken.getAll(), "You have taken:"));
                 }
             }
         } catch (ClassNotFoundException e) {

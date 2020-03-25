@@ -6,6 +6,14 @@ class CardDisplay {
 
     static HashMap<String, String[]> CardASCII = new HashMap<>();
     static {
+        CardASCII.put("??", new String[]{
+                " _____ ",
+                "|\\ ~ /|",
+                "|}}:{{|",
+                "|}}:{{|",
+                "|}}:{{|",
+                "|/_~_\\"
+        });
         CardASCII.put("9S", new String[]{
                 " _____ ",
                 "|9    |",

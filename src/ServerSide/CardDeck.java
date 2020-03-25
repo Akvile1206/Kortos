@@ -1,42 +1,53 @@
 package ServerSide;
 
 import Messages.Message;
+import Messages.ShuffleMessage;
 
 import java.util.*;
 
 public class CardDeck {
     private Set<SafeMessageQueue<String>> hands = new HashSet<>();
-    private SafeMessageQueue<String> table = new SafeMessageQueue<>();
-    private HashMap<String, ArrayList<String>> taken = new HashMap<>();
+    private SafeMessageQueue<PublicCard> table = new SafeMessageQueue<>();
+    private SafeMessageQueue<PublicCard> bargain = new SafeMessageQueue<>();
+    private Set<SafeMessageQueue<String>> taken = new HashSet<>();
 
-    public HashMap<String, ArrayList<String>> getTaken() {
-        return (HashMap<String, ArrayList<String>>)taken.clone();
-    }
+    public String popTable() {return table.take().card;}
 
-    public void takeTable(String nick) {
-        ArrayList<String> buffer = taken.getOrDefault(nick, new ArrayList<>());
-        buffer.addAll(table.getAll());
-        table.flush();
-        taken.put(nick, buffer);
-    }
+    public String popBargain() {return bargain.take().card;}
 
     public ArrayList<String> getTable() {
-        return table.getAll();
+        ArrayList<PublicCard> cards = table.getAll();
+        ArrayList<String> table = new ArrayList<>();
+        for(PublicCard c : cards) {
+            if(c.faceUp) {
+                table.add(c.card);
+            } else {
+                table.add("??");
+            }
+        }
+        return table;
     }
 
-    public void placeCard(String card) {
-        table.put(card);
+    public void placeCardOnTheTable(String card, boolean faceUp) {
+        table.put(new PublicCard(card, faceUp));
     }
 
-    public void register(SafeMessageQueue<String> q) {
+    public void placeCardIntoTheBuffer(String card, boolean faceUp) {
+        bargain.put(new PublicCard(card, faceUp));
+    }
+
+
+    public void register(SafeMessageQueue<String> q, SafeMessageQueue<String> t) {
         synchronized (this) {
             hands.add(q);
+            taken.add(t);
         }
     }
 
-    public void deregister(SafeMessageQueue<String> q) {
+    public void deregister(SafeMessageQueue<String> q, SafeMessageQueue<String> t) {
         synchronized (this) {
             hands.remove(q);
+            taken.remove(t);
         }
     }
 
@@ -44,10 +55,13 @@ public class CardDeck {
         this.wait();
     }
 
-    public synchronized void shuffle(int from, MultiQueue<Message> players) {
-        taken = new HashMap<>();
+    public synchronized int shuffle(ShuffleMessage m, MultiQueue<Message> players) {
+
         table.flush();
         for(SafeMessageQueue<String> h : hands) {
+            h.flush();
+        }
+        for(SafeMessageQueue<String> h : taken) {
             h.flush();
         }
 
@@ -59,7 +73,7 @@ public class CardDeck {
         suits.add("C");
 
         for(String s : suits) {
-            for(int i = from; i<=10; i++) {
+            for(int i = m.from; i<=10; i++) {
                 cards.add(i+s);
             }
             cards.add("J"+s);
@@ -70,14 +84,29 @@ public class CardDeck {
 
         Collections.shuffle(cards);
 
-        int cardsPerPlayer = cards.size()/players.getNumberOfPlayers();
         for(SafeMessageQueue<String> h : hands) {
-            for(int i=0; i<cardsPerPlayer; i++) {
+            for(int i=0; i<m.initial; i++) {
                 h.put(cards.pop());
             }
         }
 
+        int b = 0;
+        while (!cards.isEmpty()) {
+            bargain.put(new PublicCard(cards.pop(),false));
+            b++;
+        }
+
         this.notifyAll();
+        return b;
     }
 
+    private class PublicCard {
+        private String card;
+        private boolean faceUp;
+
+        PublicCard(String card, boolean fu) {
+            this.card = card;
+            faceUp = fu;
+        }
+    }
 }
