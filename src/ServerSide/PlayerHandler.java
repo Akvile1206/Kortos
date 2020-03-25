@@ -134,9 +134,9 @@ public class PlayerHandler {
                     multiQueue.put(new StatusMessage(sb.toString()));
                     taken.put(pcm.card);
                 } else if (pcm.deck == 2) {
-                    sb.append(" into the buffer.");
+                    sb.append(" into the bargain.");
                     multiQueue.put(new StatusMessage(sb.toString()));
-                    cards.placeCardIntoTheBuffer(pcm.card, pcm.faceUp);
+                    cards.placeCardIntoTheBargain(pcm.card, pcm.faceUp);
                 }
                 clientMessages.put(new CardsMessage(playerCards.getAll(), "Your Cards:"));
             } else if (received instanceof TakeCardsMessage) {

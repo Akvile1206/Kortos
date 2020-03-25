@@ -32,7 +32,7 @@ public class CardDeck {
         table.put(new PublicCard(card, faceUp));
     }
 
-    public void placeCardIntoTheBuffer(String card, boolean faceUp) {
+    public void placeCardIntoTheBargain(String card, boolean faceUp) {
         bargain.put(new PublicCard(card, faceUp));
     }
 
