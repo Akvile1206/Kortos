@@ -13,7 +13,7 @@ public class ClientGUI extends Application {
     public void start(Stage primaryStage) throws Exception{
 
         window = primaryStage;
-        Parent root = FXMLLoader.load(getClass().getResource("../resources/scenes/ingame.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("../resources/scenes/console.fxml"));
 
         Scene menu = new Scene(root);
 

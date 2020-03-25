@@ -2,17 +2,22 @@ package ClientSide;
 
 import Messages.*;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Orientation;
+import javafx.scene.Node;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Skin;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 import java.io.*;
@@ -36,10 +41,11 @@ public class KortosClient implements Initializable {
     private Thread outputThread = null;
     private long vvalLastChange = 0;
     private double vvalBeforeChange = 1.0;
+    private SimpleDoubleProperty scrollBarWidthProperty = new SimpleDoubleProperty();
 
     @FXML private ScrollPane root;
     @FXML private Text consoleText;
-    @FXML private Text consoleTextBound;
+    @FXML private Text inputLine;
     @FXML private TextField inputText;
 
     @Override
@@ -53,9 +59,24 @@ public class KortosClient implements Initializable {
         root.addEventHandler(MouseEvent.MOUSE_PRESSED, Event::consume);
         root.setVvalue(1.0);
 
-        consoleText.setFont(Font.font ("Consolas"));
-        consoleTextBound.setFont(Font.font ("Consolas"));
-        consoleTextBound.textProperty().bind(Bindings.concat("> ").concat(inputText.textProperty()));
+        if (root.getSkin() == null) {
+            // Skin is not yet attached, wait until skin is attached to access the scroll bars
+            ChangeListener<Skin<?>> skinChangeListener = new ChangeListener<Skin<?>>() {
+                @Override
+                public void changed(ObservableValue<? extends Skin<?>> observable, Skin<?> oldValue, Skin<?> newValue) {
+                    root.skinProperty().removeListener(this);
+                    accessScrollBar(root);
+                }
+            };
+            root.skinProperty().addListener(skinChangeListener);
+        } else {
+            // Skin is already attached, just access the scroll bars
+            accessScrollBar(root);
+        }
+
+        consoleText.wrappingWidthProperty().bind(root.widthProperty().subtract(scrollBarWidthProperty.multiply(1.5)));
+        inputText.prefWidthProperty().bind(root.widthProperty().subtract(inputLine.getLayoutBounds().getWidth())
+                                                               .subtract(scrollBarWidthProperty.multiply(1.5)));
         inputText.requestFocus();
         root.vvalueProperty().addListener((observableValue, oldVal, newVal) -> {
             vvalLastChange = System.currentTimeMillis();
@@ -79,6 +100,18 @@ public class KortosClient implements Initializable {
         }
         catch (IOException exc) {
             exc.printStackTrace();
+        }
+    }
+
+    private void accessScrollBar(ScrollPane scrollPane) {
+        for (Node node : scrollPane.lookupAll(".scroll-bar")) {
+            if (node instanceof ScrollBar) {
+                ScrollBar scrollBar = (ScrollBar) node;
+                if (scrollBar.getOrientation() == Orientation.VERTICAL) {
+                    scrollBarWidthProperty.bind(scrollBar.widthProperty());
+                }
+
+            }
         }
     }
 
