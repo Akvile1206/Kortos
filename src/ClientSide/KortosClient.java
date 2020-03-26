@@ -30,7 +30,7 @@ import java.util.ResourceBundle;
 
 public class KortosClient implements Initializable {
 
-    private String server = "127.0.0.1";
+    private String server = "131.111.9.26";
     private int port = 8000;
     private final double epsilon = 0.00001;
 
@@ -185,6 +185,14 @@ public class KortosClient implements Initializable {
 
                 int deck;
                 switch (split[0]) {
+                    case "\\help":
+                        displayLine("Change nickname: \\nick [new nickname]");
+                        displayLine("Shuffle: \\shuffle [starting card] [initial cards per player]");
+                        displayLine("Codes: 0 - table, 1 - your taken pile, 2 - bargain.");
+                        displayLine("Place a card: \\place [Card Code] [face up?] [destination code]");
+                        displayLine("Check a deck: \\check [is this check public?] [deck code]");
+                        displayLine("Take cards: \\take [source code] [number of cards]");
+                        break;
                     case "\\nick":
                         ChangeNickMessage cnm = new ChangeNickMessage(split[1]);
                         oos.writeObject(cnm);
@@ -306,8 +314,9 @@ public class KortosClient implements Initializable {
                         }
                         oos.writeObject(new TakeCardsMessage(deck,number));
                         break;
-                    case "\\checkTaken":
+                    case "\\check":
                         boolean isPublic = true; //default
+                        deck = 1; //taken
                         if(split.length > 1) {
                             switch (split[1]) {
                                 case "1":
@@ -317,11 +326,27 @@ public class KortosClient implements Initializable {
                                     isPublic = false;
                                     break;
                                 default:
-                                    displayLine("Usage: \\checkTaken [isPublic]");
+                                    displayLine("Usage: \\check [isPublic] [deck code]");
                                     return;
                             }
                         }
-                        oos.writeObject(new CheckCardsMessage(isPublic));
+                        if(split.length>2) {
+                            switch (split[2]) {
+                                case "0":
+                                    deck = 0;
+                                    break;
+                                case "1":
+                                    deck = 1;
+                                    break;
+                                case "2":
+                                    deck = 2;
+                                    break;
+                                default:
+                                    displayLine("Usage: \\check [isPublic] [deck code]");
+                                    return;
+                            }
+                        }
+                        oos.writeObject(new CheckCardsMessage(isPublic, deck));
                         break;
                     default:
                         String command = split[0].substring(1);

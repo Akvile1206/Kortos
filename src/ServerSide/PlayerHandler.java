@@ -165,11 +165,28 @@ public class PlayerHandler {
                     clientMessages.put(new CardsMessage(playerCards.getAll(), "Your Cards:"));
                 }
             } else if (received instanceof CheckCardsMessage) {
-                multiQueue.put(new StatusMessage(nickname + " has checked their taken cards."));
-                if (((CheckCardsMessage) received).isPublic) {
-                    multiQueue.put(new CardsMessage(taken.getAll(), nickname + " has:"));
+                CheckCardsMessage ccm = (CheckCardsMessage) received;
+
+                ArrayList<String> c = new ArrayList<>();
+                String header = "";
+                if(ccm.deck == 0) {
+                    header = "Cards on the table:";
+                    c = cards.getTable();
+                } else if(ccm.deck == 1) {
+                    header = nickname + " has:";
+                    multiQueue.put(new StatusMessage(nickname + " has checked their taken cards."));
+                    c = taken.getAll();
+                } else if (ccm.deck == 2) {
+                    header = "Cards in the bargain:";
+                    multiQueue.put(new StatusMessage(nickname + " has checked the bargain."));
+                    c = cards.getOpenBargain();
+                }
+                CardsMessage cm = new CardsMessage(c, header);
+
+                if (ccm.isPublic) {
+                    multiQueue.put(cm);
                 } else {
-                    clientMessages.put(new CardsMessage(taken.getAll(), "You have taken:"));
+                    clientMessages.put(cm);
                 }
             }
         } catch (ClassNotFoundException e) {

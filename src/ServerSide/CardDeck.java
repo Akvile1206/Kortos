@@ -28,6 +28,15 @@ public class CardDeck {
         return table;
     }
 
+    public ArrayList<String> getOpenBargain() {
+        ArrayList<PublicCard> cards = bargain.getAll();
+        ArrayList<String> bargain = new ArrayList<>();
+        for(PublicCard c : cards) {
+            bargain.add(c.card);
+        }
+        return bargain;
+    }
+
     public void placeCardOnTheTable(String card, boolean faceUp) {
         table.put(new PublicCard(card, faceUp));
     }
