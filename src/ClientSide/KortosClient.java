@@ -30,7 +30,7 @@ import java.util.ResourceBundle;
 
 public class KortosClient implements Initializable {
 
-    private String server = "131.111.9.26";
+    private String server = "localhost";
     private int port = 8000;
     private final double epsilon = 0.00001;
 
