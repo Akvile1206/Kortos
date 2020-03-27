@@ -69,25 +69,6 @@ public class PlayerHandler {
             }
         };
         input.start();
-        Thread getCards = new Thread(){
-            @Override
-            public  void  run() {
-                while (true) {
-                    try {
-                        cards.getCards();
-                        ArrayList<String> hand = playerCards.getAll();
-                        if(hand.size()>0) {
-                            clientMessages.put(new CardsMessage(hand, "Your Cards:"));
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-        getCards.start();
-
-
     }
 
     private void disconnect() {
@@ -180,6 +161,10 @@ public class PlayerHandler {
                     header = "Cards in the bargain:";
                     multiQueue.put(new StatusMessage(nickname + " has checked the bargain."));
                     c = cards.getOpenBargain();
+                } else if (ccm.deck == 3) {
+                    header = "Your cards:";
+                    multiQueue.put(new StatusMessage(nickname + " has checked their cards in hand."));
+                    c = playerCards.getAll();
                 }
                 CardsMessage cm = new CardsMessage(c, header);
 

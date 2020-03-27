@@ -32,27 +32,27 @@ class CardDisplay {
         });
         CardASCII.put("JS", new String[]{
                 " _____ ",
-                "|J  __|",
+                "|J♠ __|",
                 "| ^ {)|",
                 "|(.)% |",
                 "| | % |",
-                "|__%%J|"
+                "|__%♠J|"
         });
         CardASCII.put("QS", new String[]{
                 " _____ ",
-                "|Q  ww|",
+                "|Q♠ ww|",
                 "| ^ {(|",
                 "|(.)%%|",
                 "| |%%%|",
-                "|_%%%Q|"
+                "|_%%♠Q|"
         });
         CardASCII.put("KS", new String[]{
                 " _____ ",
-                "|K  ww|",
+                "|K♠ ww|",
                 "| ^ {)|",
                 "|(.)%%|",
                 "| |%%%|",
-                "|_%%%K|"
+                "|_%%♠K|"
         });
         CardASCII.put("AS", new String[]{
                 " _____ ",
@@ -80,35 +80,35 @@ class CardDisplay {
         });
         CardASCII.put("JC", new String[]{
                 " _____ ",
-                "|J  __|",
+                "|J♣ __|",
                 "| o {)|",
                 "|o o% |",
                 "| | % |",
-                "|__%%J|"
+                "|__%♣J|"
         });
         CardASCII.put("QC", new String[]{
                 " _____ ",
-                "|Q  ww|",
+                "|Q♣ ww|",
                 "| o {(|",
                 "|o o%%|",
                 "| |%%%|",
-                "|_%%%Q|"
+                "|_%%♣Q|"
         });
         CardASCII.put("KC", new String[]{
                 " _____ ",
-                "|K  ww|",
+                "|K♣ ww|",
                 "| o {)|",
                 "|o o%%|",
                 "| |%%%|",
-                "|_%%%K|"
+                "|_%%♣K|"
         });
         CardASCII.put("AC", new String[]{
                 " _____ ",
-                "|A _  |",
+                "|A♣_  |",
                 "| ( ) |",
                 "|(_'_)|",
                 "|  |  |",
-                "|____A|"
+                "|___♣A|"
         });
         CardASCII.put("9H", new String[]{
                 " _____ ",
@@ -128,27 +128,27 @@ class CardDisplay {
         });
         CardASCII.put("JH", new String[]{
                 " _____ ",
-                "|J  __|",
+                "|J♥ __|",
                 "|   {)|",
                 "|(v)% |",
                 "| Y % |",
-                "|__%%J|"
+                "|__%♥J|"
         });
         CardASCII.put("QH", new String[]{
                 " _____ ",
-                "|Q  ww|",
+                "|Q♥ ww|",
                 "|   {(|",
                 "|(v)%%|",
                 "| Y%%%|",
-                "|_%%%Q|"
+                "|_%%♥Q|"
         });
         CardASCII.put("KH", new String[]{
                 " _____ ",
-                "|K  ww|",
+                "|K♥ ww|",
                 "|   {)|",
                 "|(v)%%|",
                 "| Y%%%|",
-                "|_%%%K|"
+                "|_%%♥K|"
         });
         CardASCII.put("AH", new String[]{
                 " _____ ",
@@ -156,7 +156,7 @@ class CardDisplay {
                 "|( v )|",
                 "| \\ / |",
                 "|  .  |",
-                "|____A|"
+                "|___♥A|"
         });
         CardASCII.put("9D", new String[]{
                 " _____ ",
@@ -176,35 +176,35 @@ class CardDisplay {
         });
         CardASCII.put("JD", new String[]{
                 " _____ ",
-                "|J  __|",
+                "|J♦ __|",
                 "| /\\{)|",
                 "| \\/% |",
                 "|   % |",
-                "|__%%J|"
+                "|__%♦J|"
         });
         CardASCII.put("QD", new String[]{
                 " _____ ",
-                "|Q  ww|",
+                "|Q♦ ww|",
                 "| /\\{(|",
                 "| \\/%%|",
                 "|  %%%|",
-                "|_%%%Q|"
+                "|_%%♦Q|"
         });
         CardASCII.put("KD", new String[]{
                 " _____ ",
-                "|K  ww|",
+                "|K♦ ww|",
                 "| /\\{)|",
                 "| \\/%%|",
                 "|  %%%|",
-                "|_%%%K|"
+                "|_%%♦K|"
         });
         CardASCII.put("AD", new String[]{
                 " _____ ",
-                "|A ^  |",
+                "|A♦^  |",
                 "| / \\ |",
                 "| \\ / |",
                 "|  .  |",
-                "|____A|"
+                "|___♦A|"
         });
     }
 }

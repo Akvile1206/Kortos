@@ -24,13 +24,11 @@ import java.io.*;
 import java.net.Socket;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class KortosClient implements Initializable {
 
-    private String server = "localhost";
+    private String server = "localhost";//"131.111.8.60";
     private int port = 8000;
     private final double epsilon = 0.00001;
 
@@ -115,7 +113,73 @@ public class KortosClient implements Initializable {
         }
     }
 
+    private class TukstantisComparator implements Comparator<String> {
+
+        @Override
+        public int compare(String o1, String o2) {
+            char suit1 = o1.charAt(o1.length()-1);
+            char suit2 = o2.charAt(o2.length()-1);
+
+            String val1 = o1.substring(0, o1.length()-1);
+            String val2 = o2.substring(0, o2.length()-1);
+            if(suit1 == suit2) {
+                if(val1.equals("A")){
+                    return 1;
+                }
+                if(val2.equals("A")){
+                    return -1;
+                }
+                if(val1.equals("10")){
+                    return 1;
+                }
+                if(val2.equals("10")){
+                    return -1;
+                }
+                if(val1.equals("K")){
+                    return 1;
+                }
+                if(val2.equals("K")){
+                    return -1;
+                }
+                if(val1.equals("Q")){
+                    return 1;
+                }
+                if(val2.equals("Q")){
+                    return -1;
+                }
+                if(val1.equals("J")){
+                    return 1;
+                }
+                if(val2.equals("J")){
+                    return -1;
+                }
+
+                return val1.compareTo(val2);
+            }
+            if(suit1 == 'H'){
+                return 1;
+            }
+            if(suit2 == 'H'){
+                return -1;
+            }
+            if(suit1 == 'D'){
+                return 1;
+            }
+            if(suit2 == 'D'){
+                return -1;
+            }
+            if(suit1 == 'S'){
+                return 1;
+            }
+            if(suit2 == 'S'){
+                return -1;
+            }
+            return suit1 - suit2;
+        }
+    }
+
     private void printCards(ArrayList<String> cards) {
+        cards.sort(new TukstantisComparator());
         for(int i=0; i<6; i++) {
             for(String c:cards) {
                 displayText(CardDisplay.CardASCII.get(c)[i] + " ");
@@ -215,18 +279,7 @@ public class KortosClient implements Initializable {
                         oos.writeObject(sm);
                         break;
                     case "\\cards": {
-                        if (cards == null) {
-                            displayLine("You have no cards yet!");
-                            return;
-                        }
-                        displayLine("Your Cards: ");
-                        int i = 0;
-                        for (String c : cards) {
-                            displayText("(" + i + ")" + c + " ");
-                            i++;
-                        }
-                        displayLine();
-
+                        oos.writeObject(new CheckCardsMessage(false,3));
                         break;
                     }
                     case "\\place":

@@ -60,10 +60,6 @@ public class CardDeck {
         }
     }
 
-    public synchronized void getCards() throws InterruptedException {
-        this.wait();
-    }
-
     public synchronized int shuffle(ShuffleMessage m, MultiQueue<Message> players) {
 
         table.flush();
@@ -104,8 +100,6 @@ public class CardDeck {
             bargain.put(new PublicCard(cards.pop(),false));
             b++;
         }
-
-        this.notifyAll();
         return b;
     }
 
