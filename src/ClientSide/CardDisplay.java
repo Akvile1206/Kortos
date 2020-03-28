@@ -112,11 +112,11 @@ class CardDisplay {
         });
         CardASCII.put("AS", new String[]{
                 " _____ ",
-                "|A .  |",
+                "|A♠.  |",
                 "| /.\\ |",
                 "|(_._)|",
                 "|  |  |",
-                "|____A|"
+                "|___♠A|"
         });
         CardASCII.put("2C", new String[]{
                 " _____ ",
@@ -320,7 +320,7 @@ class CardDisplay {
         });
         CardASCII.put("AH", new String[]{
                 " _____ ",
-                "|A_ _ |",
+                "|A♥ _ |",
                 "|( v )|",
                 "| \\ / |",
                 "|  .  |",
