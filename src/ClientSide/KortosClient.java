@@ -30,13 +30,15 @@ public class KortosClient implements Initializable {
 
     private String server = "localhost";//"131.111.8.60";
     private int port = 8000;
-    private final double epsilon = 0.00001;
+    private final int startingFrom = 9;
+    private final int numCards = 7;
 
     private ArrayList<String> cards = null;
     private ArrayList<String> table = null;
     private final Socket s = createConnection(server, port);
     private ObjectOutputStream oos;
     private Thread outputThread = null;
+    private final double epsilon = 0.00001;
     private long vvalLastChange = 0;
     private double vvalBeforeChange = 1.0;
     private SimpleDoubleProperty scrollBarWidthProperty = new SimpleDoubleProperty();
@@ -72,7 +74,6 @@ public class KortosClient implements Initializable {
             accessScrollBar(root);
         }
 
-        consoleText.wrappingWidthProperty().bind(root.widthProperty().subtract(scrollBarWidthProperty.multiply(1.5)));
         inputText.prefWidthProperty().bind(root.widthProperty().subtract(inputLine.getLayoutBounds().getWidth())
                                                                .subtract(scrollBarWidthProperty.multiply(1.5)));
         inputText.requestFocus();
@@ -258,22 +259,37 @@ public class KortosClient implements Initializable {
                         displayLine("Take cards: \\take [source code] [number of cards]");
                         break;
                     case "\\nick":
-                        ChangeNickMessage cnm = new ChangeNickMessage(split[1]);
+                        if (split.length < 2) {
+                            displayLine("Usage: \\nick <User name>");
+                            break;
+                        }
+                        String nick = out.substring(6).trim();
+                        ChangeNickMessage cnm = new ChangeNickMessage(nick);
                         oos.writeObject(cnm);
                         break;
                     case "\\shuffle":
-                        int from = 9; //default - suitable for King 3 players
-                        int initial = 8; //default
+                        if (split.length > 3) {
+                            displayLine("Usage: \\shuffle");
+                            displayLine("       \\shuffle <Starting card>");
+                            displayLine("       \\shuffle <Starting card> <Number of cards per player>");
+                            break;
+                        }
+                        int from = startingFrom;
+                        int initial = numCards;
                         try {
                             if (split.length > 1) {
                                 from = Integer.parseInt(split[1]);
+                                from = Math.min(Math.max(2, from),11);
                             }
                             if (split.length > 2) {
                                 initial = Integer.parseInt(split[2]);
+                                initial = Math.min(Math.max(0, initial), 4*(15 - from));
                             }
                         } catch (NumberFormatException e) {
-                            displayLine("Usage: \\shuffle [starting card] [initial cards per player]");
-                            return;
+                            displayLine("Usage: \\shuffle");
+                            displayLine("       \\shuffle <Starting card>");
+                            displayLine("       \\shuffle <Starting card> <Number of cards per player>");
+                            break;
                         }
                         ShuffleMessage sm = new ShuffleMessage(from, initial);
                         oos.writeObject(sm);
