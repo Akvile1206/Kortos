@@ -5,28 +5,33 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<ScrollPane fx:id="root" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: black;"
-            stylesheets="@../stylesheets/stylesheet.css" xmlns="http://javafx.com/javafx/8"
-            xmlns:fx="http://javafx.com/fxml/1" fx:controller="ClientSide.KortosClient">
-   <VBox mouseTransparent="true">
-      <Text fx:id="consoleText" fill="WHITE" mouseTransparent="true" strokeType="OUTSIDE" strokeWidth="0.0"
-            style="-fx-font-size: 1.25em;">
-         <font>
-            <Font name="Consolas"/>
-         </font>
-      </Text>
-      <HBox alignment="BOTTOM_LEFT">
-         <Text fx:id="inputLine" mouseTransparent="true" strokeType="OUTSIDE" strokeWidth="0.0"
-               style="-fx-fill: white; -fx-font-size: 1.25em;" text="&gt; "/>
-         <TextField fx:id="inputText" prefWidth="0.0"
-                    style="-fx-text-fill: white; -fx-font-size: 1.25em; -fx-font-family: Consolas; -fx-background-radius: 0; -fx-background-color: transparent; -fx-padding: 0;">
-            <font>
-               <Font name="Consolas" size="15.0"/>
-            </font>
-            <cursor>
-               <Cursor fx:constant="DEFAULT"/>
-            </cursor>
-         </TextField>
-      </HBox>
-   </VBox>
+<ScrollPane fx:id="root" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: black;" stylesheets="@../stylesheets/stylesheet.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ClientSide.KortosClient">
+   <content>
+      <VBox mouseTransparent="true">
+         <children>
+            <Text fx:id="consoleText" fill="WHITE" mouseTransparent="true" strokeType="OUTSIDE" strokeWidth="0.0">
+               <font>
+                  <Font name="Consolas" size="15.0" />
+               </font>
+            </Text>
+            <HBox alignment="BOTTOM_LEFT">
+               <children>
+                  <Text fx:id="inputLine" fill="WHITE" mouseTransparent="true" strokeType="OUTSIDE" strokeWidth="0.0" text="&gt; ">
+                     <font>
+                        <Font name="Consolas" size="15.0" />
+                     </font>
+                  </Text>
+                  <TextField fx:id="inputText" prefWidth="0.0" style="-fx-text-fill: white; -fx-background-radius: 0; -fx-background-color: transparent; -fx-padding: 0;">
+                     <font>
+                        <Font name="Consolas" size="15.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="DEFAULT" />
+                     </cursor>
+                  </TextField>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </content>
 </ScrollPane>

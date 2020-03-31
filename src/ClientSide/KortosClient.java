@@ -28,7 +28,7 @@ import java.util.*;
 
 public class KortosClient implements Initializable {
 
-    private String server = "localhost";//"131.111.8.60";
+    private String server = "localhost";
     private int port = 8000;
     private final int startingFrom = 9;
     private final int numCards = 7;
@@ -52,7 +52,7 @@ public class KortosClient implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         root.addEventHandler(KeyEvent.KEY_PRESSED, ev -> {
             if (ev.getCode() == KeyCode.ENTER) {
-                KortosClient.this.readUserInput();
+                readUserInput();
                 ev.consume();
             }
         });
@@ -94,6 +94,7 @@ public class KortosClient implements Initializable {
 
         try {
             assert s != null;
+            displayLine(inputText.getText());
             OutputStream outputStream = s.getOutputStream();
             oos = new ObjectOutputStream(outputStream);
         }
