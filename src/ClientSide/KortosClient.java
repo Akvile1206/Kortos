@@ -94,7 +94,7 @@ public class KortosClient implements Initializable {
 
         try {
             assert s != null;
-            displayLine(inputText.getText());
+            displayText(inputText.getText());
             OutputStream outputStream = s.getOutputStream();
             oos = new ObjectOutputStream(outputStream);
         }
