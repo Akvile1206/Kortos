@@ -28,7 +28,7 @@ import java.util.*;
 
 public class KortosClient implements Initializable {
 
-    private String server = "localhost";//"131.111.8.60";
+    private String server = "127.0.0.1";//"131.111.8.60";
     private int port = 8000;
     private final int startingFrom = 9;
     private final int numCards = 7;
