@@ -1,5 +1,5 @@
 # Kortos 
-#### *[kortos] f pl* - (playing) card
+#### *[kortos] f pl* - (playing) cards
 
 This is an extension of a university project that we did for Further Java course (https://www.cl.cam.ac.uk/teaching/1920/FJava/). And it is also an experiment in server/client system design. The basic function of the application is to support as much of real card deck operations as possible - from shuffling to checking the bargain - to make it posible to play classic games like King and 1000 over distance. Tthe server side pushes one to have as little different types of messages as possible and make them able to represent a great range of real world operations meanwhile the client side would love to have commands specific to the game at hand - easy to remember and manage. In the current iteration the server side is winning. 
 
